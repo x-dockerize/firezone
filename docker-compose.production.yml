@@ -1,0 +1,54 @@
+services:
+  firezone:
+    image: firezone/firezone:latest
+    container_name: firezone
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - firezone-postgres
+    ports:
+      - "51820:51820/udp"
+    networks:
+      - firezone-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-network"
+
+      # Routers
+      - "traefik.http.routers.firezone.rule=Host(`${FIREZONE_SERVER_HOSTNAME}`)"
+      - "traefik.http.routers.firezone.entrypoints=websecure"
+      - "traefik.http.routers.firezone.tls.certresolver=le-cloudflare"
+      - "traefik.http.routers.firezone.service=firezone"
+
+      # Services
+      - "traefik.http.services.firezone.loadbalancer.server.port=13000"
+    volumes:
+      - ./.docker/firezone/data:/var/firezone
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+
+  firezone-postgres:
+    image: postgres:15
+    container_name: firezone-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ./.docker/postgres/data:/var/lib/postgresql/data
+    networks:
+      - firezone-network
+
+
+networks:
+  firezone-network:
+    internal: true
+  traefik-network:
+    external: true
