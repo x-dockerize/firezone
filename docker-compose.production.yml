@@ -1,6 +1,14 @@
+x-deploy: &default-deploy
+  restart_policy:
+    condition: unless-stopped
+    delay: 5s
+    window: 120s
+  update_config:
+    order: start-first
+
 services:
   firezone:
-    image: firezone/firezone:latest
+    image: firezone/firezone:0.7.36
     container_name: firezone
     restart: unless-stopped
     env_file:
@@ -10,8 +18,10 @@ services:
     ports:
       - "51820:51820/udp"
     networks:
-      - firezone-network
-      - traefik-network
+      firezone-network:
+        ipv4_address: 172.25.0.100
+        ipv6_address: fcff:3990:3990::99
+      traefik-network:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-network"
@@ -30,25 +40,46 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv4.ip_forward=1
       - net.ipv6.conf.all.forwarding=1
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      <<: *default-deploy
 
-  firezone-postgres:
+  postgres:
     image: postgres:15
     container_name: firezone-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME:-firezone}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?err}
     volumes:
-      - ./.docker/postgres/data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - firezone-network
+    deploy:
+      <<: *default-deploy
+      update_config:
+        order: stop-first
+
+
+volumes:
+  postgres-data:
 
 
 networks:
   firezone-network:
-    internal: true
+    enable_ipv6: true
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+        - subnet: fcff:3990:3990::/64
+          gateway: fcff:3990:3990::1
   traefik-network:
     external: true
