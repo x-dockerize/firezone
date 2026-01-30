@@ -117,6 +117,13 @@ Tüm servisler ayağa kalkacak ve Web UI’ye **EXTERNAL_URL** üzerinden erişe
 
 ---
 
+## Tek Komutla Orijinal Kurulum
+```
+bash <(curl -fsSL https://github.com/firezone/firezone/raw/legacy/scripts/install.sh)
+```
+
+---
+
 ## Kaynaklar
 
 * [Firezone GitHub](https://github.com/firezone/firezone)
