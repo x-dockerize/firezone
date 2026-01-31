@@ -11,10 +11,10 @@ services:
     image: firezone/firezone:0.7.36
     container_name: firezone
     restart: unless-stopped
-    env_file:
-      - .env
     depends_on:
       - postgres
+    env_file:
+      - .env
     ports:
       - "51820:51820/udp"
     networks:
@@ -47,6 +47,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z 127.0.0.1 13000 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     deploy:
       <<: *default-deploy
 
@@ -62,6 +68,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - firezone-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     deploy:
       <<: *default-deploy
       update_config:

@@ -29,11 +29,16 @@ gen_password() {
 }
 
 gen_base64() {
-  openssl rand -base64 48 | tr -d '\n'
+  local bytes="$1"
+  openssl rand -base64 "$bytes" | tr -d '\n'
 }
 
 gen_hex() {
   openssl rand -hex 32
+}
+
+gen_db_encryption_key() {
+  openssl rand -base64 32 | tr -d '\n'
 }
 
 set_env () {
@@ -64,18 +69,6 @@ else
 fi
 
 # --------------------------------------------------
-# Firezone Secret'ları
-# --------------------------------------------------
-GUARDIAN_SECRET_KEY=$(gen_base64)
-SECRET_KEY_BASE=$(gen_base64)
-LIVE_VIEW_SIGNING_SALT=$(gen_base64)
-COOKIE_SIGNING_SALT=$(gen_base64)
-COOKIE_ENCRYPTION_SALT=$(gen_base64)
-
-DATABASE_PASSWORD=$(gen_base64)
-DATABASE_ENCRYPTION_KEY=$(gen_hex)
-
-# --------------------------------------------------
 # .env Dosyasını Güncelle
 # --------------------------------------------------
 set_env FIREZONE_SERVER_HOSTNAME "$FIREZONE_SERVER_HOSTNAME"
@@ -84,14 +77,14 @@ set_env EXTERNAL_URL "$EXTERNAL_URL"
 set_env DEFAULT_ADMIN_EMAIL "$DEFAULT_ADMIN_EMAIL"
 set_env DEFAULT_ADMIN_PASSWORD "$DEFAULT_ADMIN_PASSWORD"
 
-set_env GUARDIAN_SECRET_KEY "$GUARDIAN_SECRET_KEY"
-set_env SECRET_KEY_BASE "$SECRET_KEY_BASE"
-set_env LIVE_VIEW_SIGNING_SALT "$LIVE_VIEW_SIGNING_SALT"
-set_env COOKIE_SIGNING_SALT "$COOKIE_SIGNING_SALT"
-set_env COOKIE_ENCRYPTION_SALT "$COOKIE_ENCRYPTION_SALT"
+set_env GUARDIAN_SECRET_KEY "$(gen_base64 64)"
+set_env SECRET_KEY_BASE "$(gen_base64 64)"
+set_env LIVE_VIEW_SIGNING_SALT "$(gen_base64 32)"
+set_env COOKIE_SIGNING_SALT "$(gen_base64 8)"
+set_env COOKIE_ENCRYPTION_SALT "$(gen_base64 8)"
 
-set_env DATABASE_PASSWORD "$DATABASE_PASSWORD"
-set_env DATABASE_ENCRYPTION_KEY "$DATABASE_ENCRYPTION_KEY"
+set_env DATABASE_PASSWORD "$(gen_base64 64)"
+set_env DATABASE_ENCRYPTION_KEY "$(gen_db_encryption_key)"
 
 # --------------------------------------------------
 # Sonuçları Göster
