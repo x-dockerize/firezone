@@ -99,4 +99,3 @@ echo "🔑 Admin Şifresi       : $DEFAULT_ADMIN_PASSWORD"
 echo "-----------------------------------------------"
 echo "⚠️  Admin şifresini güvenli bir yerde saklayın!"
 echo "==============================================="
-
