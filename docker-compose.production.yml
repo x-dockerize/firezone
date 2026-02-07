@@ -1,18 +1,8 @@
-x-deploy: &default-deploy
-  restart_policy:
-    condition: unless-stopped
-    delay: 5s
-    window: 120s
-  update_config:
-    order: start-first
-
 services:
   firezone:
     image: firezone/firezone:0.7.36
     container_name: firezone
     restart: unless-stopped
-    depends_on:
-      - postgres
     env_file:
       - .env
     ports:
@@ -21,6 +11,7 @@ services:
       firezone-network:
         ipv4_address: 172.25.0.100
         ipv6_address: fcff:3990:3990::99
+      postgres-network:
       traefik-network:
     labels:
       - "traefik.enable=true"
@@ -53,31 +44,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
-    deploy:
-      <<: *default-deploy
-
-  postgres:
-    image: postgres:15
-    container_name: firezone-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME:-firezone}
-      POSTGRES_USER: ${DATABASE_USER:-postgres}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?err}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - firezone-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    deploy:
-      <<: *default-deploy
-      update_config:
-        order: stop-first
 
 
 volumes:
@@ -93,5 +59,7 @@ networks:
         - subnet: 172.25.0.0/16
         - subnet: fcff:3990:3990::/64
           gateway: fcff:3990:3990::1
+  postgres-network:
+    external: true
   traefik-network:
     external: true

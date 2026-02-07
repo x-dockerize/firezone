@@ -12,14 +12,12 @@ if [ ! -f "$ENV_EXAMPLE" ]; then
   exit 1
 fi
 
-if [ -f "$ENV_FILE" ]; then
-  echo "⚠️  $ENV_FILE zaten mevcut."
-  read -rp "Üzerine yazılsın mı? (y/N): " confirm
-  [[ "$confirm" =~ ^[Yy]$ ]] || exit 1
+if [ ! -f "$ENV_FILE" ]; then
+  cp "$ENV_EXAMPLE" "$ENV_FILE"
+  echo "✅ $ENV_EXAMPLE → $ENV_FILE kopyalandı"
+else
+  echo "ℹ️  $ENV_FILE mevcut, güncellenecek"
 fi
-
-cp "$ENV_EXAMPLE" "$ENV_FILE"
-echo "✅ $ENV_EXAMPLE → $ENV_FILE kopyalandı"
 
 # --------------------------------------------------
 # Yardımcı Fonksiyonlar
@@ -33,10 +31,6 @@ gen_base64() {
   openssl rand -base64 "$bytes" | tr -d '\n'
 }
 
-gen_hex() {
-  openssl rand -hex 32
-}
-
 gen_db_encryption_key() {
   openssl rand -base64 32 | tr -d '\n'
 }
@@ -44,7 +38,12 @@ gen_db_encryption_key() {
 set_env () {
   local key="$1"
   local value="$2"
-  sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+
+  if grep -q "^${key}=" "$ENV_FILE"; then
+    sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+  else
+    echo "${key}=${value}" >> "$ENV_FILE"
+  fi
 }
 
 # --------------------------------------------------
@@ -83,19 +82,21 @@ set_env LIVE_VIEW_SIGNING_SALT "$(gen_base64 32)"
 set_env COOKIE_SIGNING_SALT "$(gen_base64 8)"
 set_env COOKIE_ENCRYPTION_SALT "$(gen_base64 8)"
 
-set_env DATABASE_PASSWORD "$(gen_base64 64)"
+DB_PASSWORD="$(gen_base64 64)"
+set_env DATABASE_PASSWORD "$DB_PASSWORD"
 set_env DATABASE_ENCRYPTION_KEY "$(gen_db_encryption_key)"
 
 # --------------------------------------------------
-# Sonuçları Göster
+# Sonuç
 # --------------------------------------------------
 echo
 echo "==============================================="
-echo "🎉 Firezone .env Başarıyla Oluşturuldu!"
+echo "🎉 Firezone .env Hazır!"
 echo "-----------------------------------------------"
 echo "🌐 EXTERNAL_URL        : $EXTERNAL_URL"
-echo "👤 Admin Email         : $DEFAULT_ADMIN_EMAIL"
+echo "👤 Admin E-posta       : $DEFAULT_ADMIN_EMAIL"
 echo "🔑 Admin Şifresi       : $DEFAULT_ADMIN_PASSWORD"
+echo "🔑 DB Şifresi          : $DB_PASSWORD"
 echo "-----------------------------------------------"
-echo "⚠️  Admin şifresini güvenli bir yerde saklayın!"
+echo "⚠️ Şifreleri güvenli bir yerde saklayın!"
 echo "==============================================="

@@ -25,7 +25,7 @@ Proje, kullanıcıların `.env` dosyasını kolayca oluşturmasını sağlayan b
 
 * Docker ≥ 24.0
 * Docker Compose ≥ 2.0
-* `.env.example` dosyası
+* PostgreSQL ([x-dockerize/postgres](https://github.com/x-dockerize/postgres) konteyneri kullanılacak):
 
 ---
 
@@ -49,11 +49,12 @@ Script şunları yapar:
 * Firezone’un çalışması için gerekli tüm **secret** değerleri otomatik üretilir
 * `.env` dosyası güncellenir
 
-Script çalışması sonunda ekranınıza EXTERNAL_URL, admin e-posta ve şifre bilgisi yazdırılır. ⚠️ Şifreyi güvenli bir yerde saklayın.
+Script çalışması sonunda ekranınıza EXTERNAL_URL, admin e-posta ve şifre bilgisi ve veritabanı şifresi yazdırılır.
+⚠️ Admin şifresini güvenli bir yerde saklayın.
 
 ---
 
-### 2️⃣ PostgreSQL Konteynerini Başlatma
+### 2️⃣ Veritabanını ve kullanıcıyı oluşturma
 
 Öncelikle yalnızca PostgreSQL konteynerini başlatın:
 
