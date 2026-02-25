@@ -4,6 +4,8 @@ services:
     container_name: firezone
     restart: unless-stopped
     env_file: .env
+    environment:
+      EXTERNAL_URL: https://${FIREZONE_SERVER_HOSTNAME:?required}
     ports:
       - 51820:51820/udp
     volumes:
