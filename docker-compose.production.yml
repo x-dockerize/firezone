@@ -1,6 +1,6 @@
 services:
   firezone:
-    image: firezone/firezone:0.7.36
+    image: firezone/firezone:${FIREZONE_VERSION:?required}
     container_name: firezone
     restart: unless-stopped
     env_file: .env
