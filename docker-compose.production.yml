@@ -46,10 +46,6 @@ services:
       start_period: 60s
 
 
-volumes:
-  postgres-data:
-
-
 networks:
   firezone-network:
     enable_ipv6: true
