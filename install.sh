@@ -79,25 +79,34 @@ else
   DEFAULT_ADMIN_PASSWORD="$INPUT_PASSWORD"
 fi
 
+echo
+echo "--- Veritabanı ---"
+read -rp "DATABASE_HOST (boş bırakılırsa: postgres): " INPUT_DB_HOST
+DATABASE_HOST="${INPUT_DB_HOST:-postgres}"
+read -rp "DATABASE_USER (boş bırakılırsa: firezone): " INPUT_DB_USER
+DATABASE_USER="${INPUT_DB_USER:-firezone}"
+read -rsp "DATABASE_PASSWORD: " DATABASE_PASSWORD
+echo
+
 # --------------------------------------------------
 # .env Dosyasını Güncelle
 # --------------------------------------------------
 set_env FIREZONE_SERVER_HOSTNAME "$FIREZONE_SERVER_HOSTNAME"
 set_env EXTERNAL_URL "$EXTERNAL_URL"
 
-set_env DEFAULT_ADMIN_EMAIL "$DEFAULT_ADMIN_EMAIL"
+set_env DEFAULT_ADMIN_EMAIL    "$DEFAULT_ADMIN_EMAIL"
 set_env DEFAULT_ADMIN_PASSWORD "$DEFAULT_ADMIN_PASSWORD"
 
-set_env_once GUARDIAN_SECRET_KEY "$(gen_base64 64)"
-set_env_once SECRET_KEY_BASE "$(gen_base64 64)"
-set_env_once LIVE_VIEW_SIGNING_SALT "$(gen_base64 32)"
-set_env_once COOKIE_SIGNING_SALT "$(gen_base64 8)"
-set_env_once COOKIE_ENCRYPTION_SALT "$(gen_base64 8)"
+set_env DATABASE_HOST     "$DATABASE_HOST"
+set_env DATABASE_USER     "$DATABASE_USER"
+set_env DATABASE_PASSWORD "$DATABASE_PASSWORD"
 
-set_env_once DATABASE_PASSWORD "$(gen_base64 64)"
-set_env_once DATABASE_ENCRYPTION_KEY "$(gen_db_encryption_key)"
-
-DB_PASSWORD=$(grep "^DATABASE_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2-)
+set_env_once GUARDIAN_SECRET_KEY       "$(gen_base64 64)"
+set_env_once SECRET_KEY_BASE           "$(gen_base64 64)"
+set_env_once LIVE_VIEW_SIGNING_SALT    "$(gen_base64 32)"
+set_env_once COOKIE_SIGNING_SALT       "$(gen_base64 8)"
+set_env_once COOKIE_ENCRYPTION_SALT    "$(gen_base64 8)"
+set_env_once DATABASE_ENCRYPTION_KEY   "$(gen_db_encryption_key)"
 
 # --------------------------------------------------
 # Sonuç
@@ -109,7 +118,8 @@ echo "-----------------------------------------------"
 echo "🌐 EXTERNAL_URL        : $EXTERNAL_URL"
 echo "👤 Admin E-posta       : $DEFAULT_ADMIN_EMAIL"
 echo "🔑 Admin Şifresi       : $DEFAULT_ADMIN_PASSWORD"
-echo "🔑 DB Şifresi          : $DB_PASSWORD"
+echo "🗄️ DB Host             : $DATABASE_HOST"
+echo "👤 DB Password         : $DATABASE_USER"
 echo "-----------------------------------------------"
 echo "⚠️ Şifreleri güvenli bir yerde saklayın!"
 echo "==============================================="
