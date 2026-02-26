@@ -46,6 +46,18 @@ set_env () {
   fi
 }
 
+set_env_once() {
+  local key="$1"
+  local value="$2"
+
+  local current
+  current=$(grep "^${key}=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+
+  if [ -z "$current" ]; then
+    set_env "$key" "$value"
+  fi
+}
+
 # --------------------------------------------------
 # Kullanıcıdan Gerekli Bilgiler
 # --------------------------------------------------
@@ -76,15 +88,16 @@ set_env EXTERNAL_URL "$EXTERNAL_URL"
 set_env DEFAULT_ADMIN_EMAIL "$DEFAULT_ADMIN_EMAIL"
 set_env DEFAULT_ADMIN_PASSWORD "$DEFAULT_ADMIN_PASSWORD"
 
-set_env GUARDIAN_SECRET_KEY "$(gen_base64 64)"
-set_env SECRET_KEY_BASE "$(gen_base64 64)"
-set_env LIVE_VIEW_SIGNING_SALT "$(gen_base64 32)"
-set_env COOKIE_SIGNING_SALT "$(gen_base64 8)"
-set_env COOKIE_ENCRYPTION_SALT "$(gen_base64 8)"
+set_env_once GUARDIAN_SECRET_KEY "$(gen_base64 64)"
+set_env_once SECRET_KEY_BASE "$(gen_base64 64)"
+set_env_once LIVE_VIEW_SIGNING_SALT "$(gen_base64 32)"
+set_env_once COOKIE_SIGNING_SALT "$(gen_base64 8)"
+set_env_once COOKIE_ENCRYPTION_SALT "$(gen_base64 8)"
 
-DB_PASSWORD="$(gen_base64 64)"
-set_env DATABASE_PASSWORD "$DB_PASSWORD"
-set_env DATABASE_ENCRYPTION_KEY "$(gen_db_encryption_key)"
+set_env_once DATABASE_PASSWORD "$(gen_base64 64)"
+set_env_once DATABASE_ENCRYPTION_KEY "$(gen_db_encryption_key)"
+
+DB_PASSWORD=$(grep "^DATABASE_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2-)
 
 # --------------------------------------------------
 # Sonuç
