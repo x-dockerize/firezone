@@ -22,8 +22,8 @@ services:
 
       # Routers
       - traefik.http.routers.firezone.rule=Host(`${FIREZONE_SERVER_HOSTNAME:?required}`)
-      - traefik.http.routers.firezone.entrypoints=websecure
-      - traefik.http.routers.firezone.tls.certresolver=le-cloudflare
+      - traefik.http.routers.firezone.entrypoints=https
+      - traefik.http.routers.firezone.tls.certresolver=cloudflare
       - traefik.http.routers.firezone.service=firezone
 
       # Services
